@@ -8,7 +8,7 @@ let doTest(str, expected) =
     let term = parse(str) in
     let tyv = Typer.inferType(term) in
     let res = SimpleType.simplifyType(tyv) in
-    let res = Ty.show(SimpleType.coalesceType(res)) in
+    let res = Coalesce.show_simple_ty(res) in
     if res<>expected then Printf.printf "test error %s" res;
     res=expected
   with Failure msg ->
@@ -58,13 +58,10 @@ let records =
   assert(doTest("if true then { a = 1; b = true } else { b = false; c = 42 }", "{b: bool}"));
   assert(doTest("if true then { u = 1; v = 2; w = 3 } else { u = true; v = 4; x = 5 }", "{u: ⊤, v: int}"));
   assert(doTest("if true then fun x -> { u = 1; v = x } else fun y -> { u = y; v = y }", "'a -> {u: 'a ∨ int, v: 'a ∨ int}"));
-  assert(error("{ a = 123; b = true }.c",
-    "missing field: c in {a: int, b: bool}"));
-  assert(error("fun x -> { a = x }.b",
-    "missing field: b in {a: 'a}"))
+  assert(error("{ a = 123; b = true }.c", "missing field: c in {a: int, b: bool}"));
+  assert(error("fun x -> { a = x }.b", "missing field: b in {a: 'a}"))
 let self_app =
   assert(error("fun x -> x x", ""));
-  
   assert(error("fun x -> x x x", ""));
   assert(error("fun x -> fun y -> x y x",""));
   assert(error("fun x -> fun y -> x x y",""));
